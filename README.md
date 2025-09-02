@@ -1,3 +1,7 @@
+VÍDEO DO FUNCIONAMENTO DO PROJETO:
+https://youtu.be/TTtRffUPshQ
+
+
 Projeto full-stack para criação de orçamentos de peças de computador com wizard em 10 etapas, comparação de preços (novos x usados) e geração de PDF.
 
 ✨ Funcionalidades
