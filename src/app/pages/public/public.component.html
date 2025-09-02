@@ -1,0 +1,45 @@
+<ng-container *ngIf="quote; else notFound">
+  <div class="grid form-shell">
+    <div class="card grid" style="gap:16px;">
+      <div>
+        <div class="small">Orçamento público</div>
+        <h2 style="margin:0;">{{quote.category}} — {{quote.model}}</h2>
+      </div>
+
+      <div class="form-shell">
+        <div class="card">
+          <div class="small">Faixa sugerida</div>
+          <div class="price">R$ {{quote.priceMin}} – R$ {{quote.priceMax}}</div>
+        </div>
+        <div class="card">
+          <div class="small">Valor escolhido</div>
+          <div class="price">R$ {{quote.chosenPrice}}</div>
+        </div>
+      </div>
+
+      <div class="form-shell">
+        <div class="card">
+          <div class="small">Média do novo</div>
+          <div class="price">R$ {{quote.newPriceAvg}}</div>
+          <div class="small">Fontes:</div>
+          <ul class="small"><li *ngFor="let s of quote.newPriceSources">{{s}}</li></ul>
+        </div>
+        <div class="card">
+          <div class="small">Média do usado</div>
+          <div class="price">R$ {{quote.usedPriceAvg}}</div>
+          <div class="small">Fontes:</div>
+          <ul class="small"><li *ngFor="let s of quote.usedPriceSources">{{s}}</li></ul>
+        </div>
+      </div>
+
+      <div>
+        <div class="small">Fotos</div>
+        <div class="photos" *ngIf="quote.photos?.length; else noPhotos">
+          <img *ngFor="let p of quote.photos" class="photo" [src]="p" alt="foto" />
+        </div>
+        <ng-template #noPhotos><div class="small">Sem fotos</div></ng-template>
+      </div>
+    </div>
+  </div>
+</ng-container>
+<ng-template #notFound><div class="card form-shell">Orçamento não encontrado.</div></ng-template>

@@ -1,0 +1,17 @@
+<div class="thumb-grid">
+    <div class="thumb-wrap" *ngFor="let f of value; let i = index">
+        <img class="thumb" [src]="asDataUrl(f)" [alt]="'Foto ' + (i + 1)" />
+        <button class="remove" type="button" (click)="remove(i)" title="Remover">×</button>
+    </div>
+
+    <!-- botão/slot para adicionar -->
+    <label class="thumb-wrap add">
+        <input type="file" accept="image/*" multiple (change)="onInputChange($event)" hidden>
+        <span class="plus">+</span>
+    </label>
+</div>
+
+<div style="display:flex; gap:12px; margin-top:14px;">
+    <span class="small muted">({{ value?.length || 0 }}/5)</span>
+    <button class="btn btn-ghost" type="button" (click)="clear()" [disabled]="(value?.length || 0) === 0">Limpar fotos</button>
+</div>

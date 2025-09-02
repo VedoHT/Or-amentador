@@ -1,0 +1,118 @@
+/* viewport fixa: evita “pulos” ao trocar etapa */
+.step-viewport {
+    min-height: 150px;
+    position: relative;
+}
+
+/* layout vertical padrão */
+.form-shell {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* fontes maiores nos campos */
+.form-shell .input,
+.form-shell select,
+.form-shell textarea {
+    font-size: 16px;
+    line-height: 1.3;
+}
+
+/* labels em negrito */
+.form-shell label { font-weight: 700; }
+
+/* textarea fixa */
+.no-resize { resize: none; }
+.right { text-align: right; }
+
+/* progresso */
+.progress {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--bg-2) 70%, transparent);
+    overflow: hidden;
+    margin-top: 4px;
+}
+.progress .bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width .25s ease;
+}
+
+/* navegação */
+.wizard-nav { display:flex; align-items:center; justify-content:space-between; margin-top:8px; }
+.btn-arrow {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:44px; height:44px; border-radius:12px; cursor:pointer;
+    border:1px solid color-mix(in oklab, var(--border) 35%, var(--bg));
+    background: color-mix(in oklab, var(--bg-2) 75%, transparent);
+    user-select:none; font-size:18px;
+    transition: transform .06s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, color .2s ease;
+    color: var(--text);
+}
+.btn-arrow:hover { border-color: var(--accent); box-shadow: 0 0 0 4px var(--ring); }
+:root[data-theme="dark"] .btn-arrow { color: #fff; }
+
+/* ajustes da etapa 7 */
+.mt-20 { margin-top: 20px; }
+.price-line { display:flex; align-items:center; justify-content:space-between; margin: 8px 0 6px; }
+.muted { opacity: .8; }
+
+.manual-price { margin-top: 10px; }
+.input-row { display:flex; align-items:center; gap: 8px; }
+.prefix {
+    padding: 8px 10px; border-radius: 10px;
+    border: 1px solid var(--border);
+    background: color-mix(in oklab, var(--bg-2) 75%, transparent);
+}
+
+.note.warning {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #b91c1c;            /* red-700 */
+}
+:root[data-theme="dark"] .note.warning {
+    color: #fca5a5;            /* red-300 no dark */
+}
+
+.currency-input { position: relative; }
+
+/* como o prefixo agora é máscara no próprio input, não precisamos de padding extra à esquerda */
+.currency-input .input.currency {
+    padding-left: 16px;          /* padrão */
+    padding-right: 56px;         /* espaço para as setinhas custom */
+}
+
+/* setinhas custom à direita, sempre visíveis */
+.currency-input .steppers {
+    position: absolute;
+    right: 8px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 6px;
+}
+
+.currency-input .stepper {
+    width: 26px; height: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: color-mix(in oklab, var(--accent) 16%, transparent);
+    color: var(--accent);
+    font-size: 12px; line-height: 1;
+    cursor: pointer;
+    transition: transform .06s ease, background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.currency-input .stepper:hover {
+    background: color-mix(in oklab, var(--accent) 34%, transparent);
+    color: #fff; box-shadow: 0 0 0 4px var(--ring);
+}
+.currency-input .stepper:active { transform: translateY(1px); }
+
+/* remover spinner nativo dos number inputs */
+.input.number::-webkit-outer-spin-button,
+.input.number::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input.number { -moz-appearance: textfield; }

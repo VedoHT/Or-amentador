@@ -1,0 +1,68 @@
+.uploader { display: flex; flex-direction: column; gap: 14px; }
+
+/* grade estável: thumbs têm tamanho fixo; botões não “esticam” */
+.thumb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.thumb { width: 100%; height: 100%; object-fit: cover; display: block; }
+.remove {
+    position: absolute; top: 6px; right: 6px;
+    width: 28px; height: 28px; border-radius: 9999px;
+    border: 1px solid var(--border); background: var(--bg); cursor: pointer;
+}
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.thumb.placeholder { visibility: hidden; } /* mantém a grade sem “pular” */
+
+/* botão de remover na thumb */
+.thumb-remove {
+    position: absolute; right: 6px; top: 6px;
+    width: 24px; height: 24px; border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: color-mix(in oklab, var(--accent) 18%, transparent);
+    color: var(--accent); font-weight: 800; line-height: 1;
+    cursor: pointer;
+}
+.thumb-remove:hover {
+    background: var(--accent); color: #fff;
+}
+
+/* ações sempre no rodapé, tamanho fixo */
+.actions {
+    display: flex; gap: 12px; align-items: center;
+    justify-content: flex-start;
+    padding-top: 4px;
+}
+
+.btn-photo {
+    height: 44px; padding: 0 16px;
+    border-radius: 12px;
+    border: 2px solid var(--accent);            /* ✅ borda verde mais grossa */
+    background: color-mix(in oklab, var(--bg-2) 75%, transparent);
+    color: var(--text); font-weight: 800; letter-spacing: .02em;
+    box-shadow: var(--shadow); cursor: pointer;
+}
+.btn-photo:hover { box-shadow: var(--shadow-strong); }
+
+.btn-photo.ghost {
+    border-color: color-mix(in oklab, var(--border) 65%, var(--bg));
+    color: var(--text);
+}
+.btn-photo:disabled { opacity: .5; cursor: not-allowed; }
+
+.thumb-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    background: var(--bg-2);
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    display: grid;
+    place-items: center;
+}
+
+.thumb-wrap.add { cursor: pointer; }
+.thumb-wrap.add .plus { font-size: 28px; opacity: .8; }

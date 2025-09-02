@@ -1,0 +1,101 @@
+<div class="grid form-shell">
+    <div class="card grid" style="gap:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2 style="margin:0;">Entrar</h2>
+            <div class="step-indicator">Acesse para salvar seus orçamentos</div>
+        </div>
+
+        <!-- FORM ÚNICO -->
+        <form class="form-shell" (ngSubmit)="onSubmit()">
+            <!-- E-MAIL (desabilita quando já enviou) -->
+            <div>
+                <label for="email">E-mail</label>
+                <input
+                        class="input"
+                        type="email"
+                        id="email"
+                        placeholder="seu-email@exemplo.com"
+                        name="email"
+                        [(ngModel)]="email"
+                        [disabled]="enviouCodigo"
+                        autocomplete="email"
+                        required
+                />
+            </div>
+
+            <!-- CÓDIGO + TIMER (aparece após 200) -->
+            <div *ngIf="enviouCodigo">
+                <label for="codigoGerado">Código de verificação</label>
+                <p class="small">Código enviado por e‑mail. Expira em {{ formatTime(tempoRestante) }}.</p>
+                <input
+                        class="input"
+                        type="text"
+                        id="codigoGerado"
+                        [(ngModel)]="codigoGerado"
+                        name="codigoGerado"
+                        maxlength="6"
+                        placeholder="000000"
+                        (ngModelChange)="verificarCodigo()"
+                        autocomplete="one-time-code"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        required
+                />
+            </div>
+
+            <label *ngIf="enviouCodigo" class="keep">
+                <input type="checkbox" [(ngModel)]="keepMeConnected" name="keepMeConnectedValidation">
+                Mantenha-me conectado
+            </label>
+
+            <!-- AÇÕES -->
+            <div class="form-actions">
+                <!-- Botão primário: muda de rótulo e função automaticamente -->
+                <button
+                        class="btn btn-primary"
+                        type="submit"
+                        [disabled]="enviouCodigo ? (enviarDesabilitado || codigoGerado.length !== 6) : (!email || email.length < 5)"
+                >
+                    {{ enviouCodigo ? 'Confirmar código' : 'Enviar código' }}
+                </button>
+
+                <!-- Secundários -->
+                <button *ngIf="enviouCodigo" type="button" class="btn btn-ghost" (click)="resetForm()">
+                    Cancelar
+                </button>
+
+                <!-- o botão SÓ existe quando zerar -->
+                <button
+                        *ngIf="enviouCodigo && tempoRestante === 0"
+                        type="button"
+                        class="btn btn-ghost"
+                        (click)="reSend()"
+                >
+                    Reenviar código
+                </button>
+            </div>
+        </form>
+
+        <!-- ERRO -->
+        <div *ngIf="erroLogin" class="card" style="border-color:crimson;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <span style="font-size:18px;">⚠️</span>
+                <div>
+                    <b>Ops! Algo deu errado</b>
+                    <div class="small">Verifique seus dados e tente novamente</div>
+                </div>
+            </div>
+            <div style="margin-top:8px;">
+                <button class="btn btn-ghost" (click)="resetForm()">Tentar novamente</button>
+            </div>
+        </div>
+
+        <!-- AÇÕES SECUNDÁRIAS (fora do form) -->
+        <div style="display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <a routerLink="/novo" class="btn btn-ghost">Continuar sem login</a>
+                <a *ngIf="!enviouCodigo" routerLink="/registrar" class="btn btn-ghost">Registre-se</a>
+            </div>
+        </div>
+    </div>
+</div>

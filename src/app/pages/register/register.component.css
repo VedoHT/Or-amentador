@@ -1,0 +1,19 @@
+/* usa o visual global; só controlamos espaçamento e alinhamento */
+form.form-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* igual wizard/login */
+}
+
+/* botão principal ocupa largura toda (opcional) */
+button.btn-primary {
+    width: 100%;
+    margin-top: 4px;
+}
+
+/* ações secundárias lado a lado (já tenho conta + voltar) */
+.secondary-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}

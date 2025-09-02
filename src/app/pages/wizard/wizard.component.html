@@ -1,0 +1,275 @@
+<div class="grid form-shell">
+    <div class="card grid" style="gap:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2>Faça seu orçamento</h2>
+            <div class="step-indicator">Etapa {{step}} de 10</div>
+        </div>
+
+        <div class="progress">
+            <div class="bar" [style.width.%]="(step/10)*100"></div>
+        </div>
+
+        <!-- VIEWPORT com altura mínima: nada de “pulo” visual -->
+        <div class="step-viewport">
+            <ng-container [ngSwitch]="step">
+
+                <!-- 1 -->
+                <section *ngSwitchCase="1" @fadeSlideIn>
+                    <p class="small">Nas etapas seguintes, preencha os dados e detalhes sobre o produto. </p>
+                    <p class="small">Cada etapa habilita a próxima quando os campos obrigatórios estiverem completos. </p>
+                </section>
+
+                <!-- 2 -->
+                <section *ngSwitchCase="2" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div>
+                            <label>Categoria da peça</label>
+                            <select [(ngModel)]="model.category">
+                                <option value="" disabled selected>Selecione...</option>
+                                <option value="CPU">CPU</option>
+                                <option value="GPU">GPU</option>
+                                <option value="RAM">RAM</option>
+                                <option value="SSD">SSD</option>
+                                <option value="MB">Placa-mãe</option>
+                                <option value="PSU">Fonte</option>
+                                <option value="OUTROS">Outros</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Modelo</label>
+                            <input class="input" [(ngModel)]="model.model" placeholder="Ex.: Ryzen 7 3700X" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3 -->
+                <section *ngSwitchCase="3" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div>
+                            <label>Anos de uso</label>
+                            <input class="input" type="number" [(ngModel)]="model.yearsUsed" min="0" max="25"/>
+                        </div>
+                        <div>
+                            <label>Condição</label>
+                            <select [(ngModel)]="model.condition">
+                                <option value="impecavel">Impecável</option>
+                                <option value="bom">Bom</option>
+                                <option value="regular">Regular</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4 -->
+                <section *ngSwitchCase="4" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div>
+                            <label>Urgência de venda</label>
+                            <select [(ngModel)]="model.urgency">
+                                <option value="normal">Normal</option>
+                                <option value="rapida">Rápida (até alguns dias)</option>
+                                <option value="imediata">Imediata (48h)</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:16px; align-items:center; margin-top:auto;">
+                            <label><input type="checkbox" [(ngModel)]="model.hasBox" /> Tem caixa/manual</label>
+                            <label><input type="checkbox" [(ngModel)]="model.hasInvoice" /> Tem nota fiscal</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5 -->
+                <section *ngSwitchCase="5" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div>
+                            <label>Observações</label>
+                            <textarea
+                                    class="no-resize"
+                                    rows="5"
+                                    maxlength="300"
+                                    [(ngModel)]="model.notes"
+                                    placeholder="Ex.: primeiro dono, sem overclock..."></textarea>
+                            <div class="small right">{{ (model.notes?.length || 0) }}/300</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6 -->
+                <section *ngSwitchCase="6" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div class="card">
+
+                            <!-- Estado inicial -->
+                            <div class="small" *ngIf="!loading && !comparisonDone">
+                                Pronto para comparar preços.
+                            </div>
+
+                            <!-- Loading local da comparação -->
+                            <div *ngIf="loading">
+                                <p class="small">{{loadingMessage}}</p>
+                                <div aria-busy="true" class="small">Carregando...</div>
+                            </div>
+
+                            <!-- Concluído: apenas informa que pode avançar -->
+                            <div *ngIf="!loading && comparisonDone">
+                                <p class="small">✅ Comparação finalizada. Avance para conferir os valores.</p>
+                            </div>
+
+                            <div style="display:flex; gap:12px; margin-top:12px;">
+                                <!-- Botão aparece só antes de começar -->
+                                <button
+                                        class="btn btn-primary"
+                                        (click)="onStart()"
+                                        *ngIf="!loading && !comparisonDone">
+                                    Iniciar comparação
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7 -->
+                <section *ngSwitchCase="7" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div class="card">
+                            <div class="small">Média do valor da peça nova</div>
+                            <div class="price">R$ {{model.newPriceAvg || 0 | number:'1.0-0'}}</div>
+                            <div class="small">Fontes:</div>
+                            <ul class="small"><li *ngFor="let s of model.newPriceSources">{{s}}</li></ul>
+                        </div>
+
+                        <div class="card">
+                            <div class="small">Média do valor da peça usada</div>
+                            <div class="price">R$ {{model.usedPriceAvg || 0 | number:'1.0-0'}}</div>
+                            <div class="small">Fontes:</div>
+                            <ul class="small"><li *ngFor="let s of model.usedPriceSources">{{s}}</li></ul>
+                        </div>
+                    </div>
+
+                    <!-- 👇 mais respiro entre o 2º card e o seletor -->
+                    <div class="card mt-20">
+                        <div class="small">Valor <b>sugerido</b> (ajustável)</div>
+
+                        <input
+                                type="range"
+                                class="range"
+                                [min]="model.priceMin || 0"
+                                [max]="sliderMax"
+                                [step]="1"
+                                [(ngModel)]="chosenPrice"
+                                [style.--p]="chosenPercent + '%'"
+                                aria-label="Valor sugerido"
+                        />
+
+                        <p class="small muted">
+                            Este valor é <b>sugerido</b>, não obrigatório. Você pode ajustar pela barra
+                            ou digitar manualmente abaixo.
+                        </p>
+
+                        <div class="price-line">
+                            <div>Escolhido: <b>R$ {{model.chosenPrice || 0 | number:'1.0-0'}}</b></div>
+                            <div class="small">Valores sugeridos: Min: R$ {{model.priceMin}} • Max: R$ {{model.priceMax}}</div>
+                        </div>
+
+                        <p *ngIf="isAboveMax" class="note warning">*Você ultrapassou o limite sugerido. (Isso não bloqueia o orçamento).</p>
+
+                        <!-- entrada manual -->
+                        <div class="manual-price">
+                            <label class="small">OU INFORME MANUALMENTE</label>
+
+                            <div class="currency-input">
+                                <input
+                                        class="input number currency"
+                                        type="text"
+                                        inputmode="numeric"
+                                        [mask]="'separator.0'"
+                                        [thousandSeparator]="'.'"
+                                        [prefix]="'R$ '"
+                                        [dropSpecialCharacters]="true"
+                                        [allowNegativeNumbers]="false"
+                                        [formControl]="manualPriceCtrl"
+                                        placeholder="R$ 0"
+                                        aria-label="Preço manual"
+                                />
+
+                                <div class="steppers" role="group" aria-label="Ajustar valor">
+                                    <button type="button" class="stepper up" (click)="stepPrice(+1)" aria-label="Aumentar">▲</button>
+                                    <button type="button" class="stepper down" (click)="stepPrice(-1)" aria-label="Diminuir">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8 -->
+                <section *ngSwitchCase="8" @fadeSlideIn>
+                    <div class="form-shell">
+                        <div>
+                            <label>Fotos (até 5)</label>
+                            <app-photo-uploader [(value)]="model.photos"></app-photo-uploader>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 9 -->
+                <!-- 9: CUSTOS ADICIONAIS -->
+                <section *ngSwitchCase="9" @fadeSlideIn>
+                    <app-step9-custos-adicionais
+                            [nomeCompleto]="step9_nomeCompleto"
+                            [incluirTransporte]="step9_incluirTransporte"
+                            [valorManual]="step9_valorManual"
+                            [frete]="step9_frete"
+                            (changed)="onStep9Changed($event)">
+                    </app-step9-custos-adicionais>
+                </section>
+
+                <!-- 10 -->
+                <section *ngSwitchCase="10" @fadeSlideIn>
+                    <div class="card grid" style="gap:10px;">
+                        <div><b>Categoria:</b> {{model.category}}</div>
+                        <div><b>Modelo:</b> {{model.model}}</div>
+                        <div><b>Anos de uso:</b> {{model.yearsUsed}}</div>
+                        <div><b>Condição:</b> {{model.condition}}</div>
+                        <div><b>Urgência:</b> {{model.urgency}}</div>
+                        <div><b>Caixa:</b> {{model.hasBox ? 'sim':'não'}} • <b>NF:</b> {{model.hasInvoice ? 'sim':'não'}}</div>
+                        <div><b>Observações:</b> {{model.notes || '-'}}</div>
+                        <div><b>Faixa sugerida:</b> R$ {{model.priceMin}} — R$ {{model.priceMax}}</div>
+                        <div><b>Valor escolhido:</b> R$ {{model.chosenPrice}}</div>
+
+                        <div class="divider"></div>
+
+                        <div><b>Nome completo:</b> {{ step9_nomeCompleto || '-' }}</div>
+
+                        <div><b>Fotos anexadas:</b> {{ (model.photos?.length || 0) }}/5</div>
+
+                        <div>
+                            <b>Transporte:</b>
+                            <ng-container *ngIf="step9_incluirTransporte; else semTransp">
+                                Incluído —
+                                <ng-container *ngIf="step9_frete as f; else transpSemCalc">
+                                    {{ f.valor | currency:'BRL':'symbol':'1.0-0' }}
+                                </ng-container>
+                                <ng-template #transpSemCalc>valor ainda não calculado</ng-template>
+                            </ng-container>
+                            <ng-template #semTransp>Não</ng-template>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top:12px;">
+                        <button class="btn btn-primary" (click)="onGenerate()" [disabled]="generating">
+                            {{ generating ? 'Gerando…' : 'Gerar orçamento' }}
+                        </button>
+                    </div>
+                </section>
+
+            </ng-container>
+        </div>
+
+        <!-- NAV -->
+        <div class="wizard-nav">
+            <button *ngIf="step > 1" class="btn-arrow" (click)="prev()" aria-label="Voltar">←</button>
+            <span class="flex-spacer"></span>
+            <button *ngIf="step < 10 && canNext" class="btn-arrow" (click)="next()" aria-label="Avançar">→</button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+<div class="grid form-shell">
+    <div class="card grid" style="gap:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2 style="margin:0;">Meus Orçamentos</h2>
+            <a routerLink="/novo" class="btn btn-ghost">Novo orçamento</a>
+        </div>
+
+        <ng-container *ngIf="!loading && items.length; else vazioOuLoading">
+            <div class="grid" style="gap:12px;">
+                <div class="card" *ngFor="let it of items; trackBy: trackBySlug" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div>
+                        <div class="small">{{ it.criadoEm | date:'short' }}</div>
+                        <h3 style="margin:4px 0 2px;">{{ it.titulo || '—' }}</h3>
+                        <div class="small">
+                            <ng-container *ngIf="it.precoEscolhido != null; else semPreco">
+                                Escolhido: R$ {{ it.precoEscolhido | number:'1.0-0' }}
+                            </ng-container>
+                            <ng-template #semPreco>Sem valor escolhido</ng-template>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <a class="btn btn-ghost" [routerLink]="['/resultado', it.slug]">Abrir</a>
+                        <a class="btn btn-primary" [href]="'/orcamento/' + it.slug" target="_blank" rel="noopener">Público</a>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+        <ng-template #vazioOuLoading>
+            <div class="card" *ngIf="loading">Carregando…</div>
+            <div class="card" *ngIf="!loading">Você ainda não tem orçamentos.</div>
+        </ng-template>
+    </div>
+</div>

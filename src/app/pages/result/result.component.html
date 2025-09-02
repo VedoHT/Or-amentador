@@ -1,0 +1,194 @@
+<ng-container *ngIf="data as o; else notFound">
+    <div class="grid form-shell">
+        <div class="card grid" style="gap:16px;">
+
+            <!-- Cabeçalho -->
+            <div class="header">
+                <div>
+                    <div class="small">
+                        Orçamento • {{ (o.createdAt || o.criadoEm) | date:'short' }}
+                    </div>
+                    <h2 class="title">{{ o.categoria }} — {{ o.modelo }}</h2>
+                </div>
+                <!-- botão só na rota interna -->
+                <a *ngIf="!isPublic" routerLink="/novo" class="btn btn-ghost">Novo orçamento</a>
+            </div>
+
+            <!-- Meta row (não clicável) -->
+            <ul class="meta-row">
+                <li class="meta-item">
+                    <span class="meta-label">Caixa manual</span>
+                    <span class="meta-value" [class.ok]="o.temCaixaManual">{{ o.temCaixaManual ? 'Sim' : 'Não' }}</span>
+                </li>
+                <li class="meta-item">
+                    <span class="meta-label">Nota fiscal</span>
+                    <span class="meta-value" [class.ok]="o.temNotaFiscal">{{ o.temNotaFiscal ? 'Sim' : 'Não' }}</span>
+                </li>
+                <li class="meta-item">
+                    <span class="meta-label">Anos de uso</span>
+                    <span class="meta-value">{{ o.anosUso }}</span>
+                </li>
+                <li class="meta-item">
+                    <span class="meta-label">Condição</span>
+                    <span class="meta-value" [ngClass]="condClass(o.condicao)">{{ labelCondicao(o.condicao) }}</span>
+                </li>
+                <li class="meta-item">
+                    <span class="meta-label">Urgência</span>
+                    <span class="meta-value" [ngClass]="urgClass(o.urgencia)">{{ labelUrgencia(o.urgencia) }}</span>
+                </li>
+            </ul>
+
+            <!-- MINI-CARDS do INTERNO (/resultado) -->
+            <div class="cards-grid" *ngIf="!isPublic">
+                <div class="card small-card">
+                    <div class="small">Faixa sugerida</div>
+                    <div class="price">
+                        {{ o.precoMin | currency:'BRL':'symbol':'1.0-0' }} – {{ o.precoMax | currency:'BRL':'symbol':'1.0-0' }}
+                    </div>
+                </div>
+
+                <div class="card small-card">
+                    <div class="small">Valor escolhido</div>
+                    <div class="price">{{ o.precoEscolhido | currency:'BRL':'symbol':'1.0-0' }}</div>
+                </div>
+
+                <div class="card small-card">
+                    <div class="small">Transporte</div>
+                    <div class="price">{{ transporteLabel() }}</div>
+                </div>
+
+                <!-- Total por último -->
+                <div class="card small-card">
+                    <div class="small">Total</div>
+                    <div class="price">{{ o.total | currency:'BRL':'symbol':'1.0-0' }}</div>
+                </div>
+            </div>
+
+            <!-- Médias + Fontes (só interno) -->
+            <div class="cards-grid" *ngIf="!isPublic">
+                <div class="card small-card">
+                    <div class="small">Média do novo</div>
+                    <div class="price">{{ o.mediaNovo | currency:'BRL':'symbol':'1.0-0' }}</div>
+                    <div class="sources">
+                        <div class="small muted">Fontes ({{ o.fontesNovo?.length || 0 }})</div>
+                        <ul class="source-list" *ngIf="o.fontesNovo?.length; else noSourcesNovo">
+                            <li *ngFor="let s of o.fontesNovo; trackBy: trackByIndex">
+                                <a *ngIf="isUrl(s)" [href]="s" target="_blank" rel="noopener">{{ host(s) }}</a>
+                                <span *ngIf="!isUrl(s)">{{ s }}</span>
+                            </li>
+                        </ul>
+                        <ng-template #noSourcesNovo>
+                            <div class="small softer">Aguardando ingestão…</div>
+                        </ng-template>
+                    </div>
+                </div>
+
+                <div class="card small-card">
+                    <div class="small">Média do usado</div>
+                    <div class="price">{{ o.mediaUsado | currency:'BRL':'symbol':'1.0-0' }}</div>
+                    <div class="sources">
+                        <div class="small muted">Fontes ({{ o.fontesUsado?.length || 0 }})</div>
+                        <ul class="source-list" *ngIf="o.fontesUsado?.length; else noSourcesUsado">
+                            <li *ngFor="let s of o.fontesUsado; trackBy: trackByIndex">
+                                <a *ngIf="isUrl(s)" [href]="s" target="_blank" rel="noopener">{{ host(s) }}</a>
+                                <span *ngIf="!isUrl(s)">{{ s }}</span>
+                            </li>
+                        </ul>
+                        <ng-template #noSourcesUsado>
+                            <div class="small softer">Aguardando ingestão…</div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Público (/orcamento): mini-cards próprios -->
+            <div class="cards-grid" *ngIf="isPublic">
+                <div class="card small-card">
+                    <div class="small">Nome completo</div>
+                    <div class="price">{{ o.nomeCompleto || '-' }}</div>
+                </div>
+                <div class="card small-card">
+                    <div class="small">Valor escolhido</div>
+                    <div class="price">{{ o.precoEscolhido | currency:'BRL':'symbol':'1.0-0' }}</div>
+                </div>
+                <div class="card small-card">
+                    <div class="small">Transporte</div>
+                    <div class="price">
+                        <ng-container *ngIf="o.incluirTransporte; else semTranspPub">
+                            <ng-container *ngIf="o.valorTransporte != null; else soIncluidoPub">
+                                {{ o.valorTransporte | currency:'BRL':'symbol':'1.0-0' }}
+                            </ng-container>
+                            <ng-template #soIncluidoPub>Incluído</ng-template>
+                        </ng-container>
+                        <ng-template #semTranspPub>Não</ng-template>
+                    </div>
+                </div>
+                <div class="card small-card">
+                    <div class="small">Total</div>
+                    <div class="price">{{ o.total | currency:'BRL':'symbol':'1.0-0' }}</div>
+                </div>
+            </div>
+
+            <!-- NOME COMPLETO (card separado) — fica logo acima de Fotos, somente no /resultado -->
+            <div class="card" *ngIf="!isPublic">
+                <div class="small">Nome completo</div>
+                <div style="font-weight:600; margin-top:4px;">{{ o.nomeCompleto || '-' }}</div>
+            </div>
+
+            <!-- Fotos -->
+            <div>
+                <div class="small">Fotos ({{ (o.fotos?.length || 0) > 5 ? 5 : (o.fotos?.length || 0) }}/5)</div>
+
+                <div class="photos thumb-grid" *ngIf="(o.fotos?.length || 0) > 0; else noPhotos">
+                    <button
+                            class="thumb-wrap"
+                            *ngFor="let f of (o.fotos | slice:0:5); let i = index; trackBy: trackByIndex"
+                            type="button"
+                            (click)="openPhoto(i)"
+                            [title]="'Abrir foto ' + (i + 1)">
+                        <img class="thumb" [src]="safeFoto(f)" [alt]="'Foto ' + (i + 1)" />
+                        <span class="badge">{{ i + 1 }}</span>
+                    </button>
+                </div>
+
+                <ng-template #noPhotos><div class="small">Sem fotos</div></ng-template>
+            </div>
+
+            <!-- Lightbox -->
+            <div class="lightbox" *ngIf="viewerOpen" [class.closing]="closing"
+                 (click)="closeViewer()" tabindex="-1" aria-modal="true" role="dialog">
+                <div class="lightbox-inner" (click)="$event.stopPropagation()">
+                    <img [src]="safeFoto(currentPhoto)" [alt]="'Foto ' + (viewerIndex + 1)" />
+                    <button class="close" type="button" (click)="closeViewer()" aria-label="Fechar">×</button>
+                </div>
+            </div>
+
+            <!-- Link público — apenas na rota interna -->
+            <div class="card" *ngIf="!isPublic">
+                <div class="small">Link público</div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <code
+                            style="background:color-mix(in oklab, var(--bg-2) 60%, transparent); border:1px solid var(--border); padding:8px 10px; border-radius:8px;">
+                        {{ link }}
+                    </code>
+                    <button class="btn btn-ghost" (click)="copy()">Copiar</button>
+                    <a class="btn btn-primary" [href]="'/orcamento/' + (o?.slug || '')">Abrir</a>
+                    <button class="btn btn-ghost" (click)="downloadPdf()">Gerar PDF</button>
+                </div>
+            </div>
+
+            <!-- Card no mesmo lugar na página pública, só com o botão -->
+            <div class="card" *ngIf="isPublic">
+                <div class="small">Ações</div>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:10px;">
+                    <button class="btn btn-primary" (click)="downloadPdf()">Gerar PDF</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</ng-container>
+
+<ng-template #notFound>
+    <div class="card form-shell">Orçamento não encontrado.</div>
+</ng-template>

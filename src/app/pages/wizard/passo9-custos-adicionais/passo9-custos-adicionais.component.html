@@ -1,0 +1,308 @@
+<!-- CARD: Custos adicionais -->
+<div class="card grid" style="gap:12px;">
+    <h3 class="title">Custos adicionais</h3>
+
+    <!-- TRANSPORTE -->
+    <label class="row">
+        <input
+                type="checkbox"
+                [formControl]="form.controls.incluirTransporte"
+                (change)="onToggleTransporte()" />
+        <span>Transporte</span>
+
+        <!-- Botão só aparece quando marcado -->
+        <button
+                class="btn btn-ghost sm push-right"
+                type="button"
+                *ngIf="form.value.incluirTransporte"
+                (click)="openModal()">
+            Configurar / calcular
+        </button>
+    </label>
+
+    <!-- Campo de valor manual (currency) quando marcado -->
+    <div class="manual" *ngIf="form.value.incluirTransporte">
+        <label class="col">
+            <span class="small">Valor de transporte (opcional)</span>
+            <input
+                    class="input"
+                    type="text"
+                    inputmode="numeric"
+                    [mask]="'separator.2'"
+                    [thousandSeparator]="'.'"
+                    [prefix]="'R$ '"
+                    [dropSpecialCharacters]="true"
+                    [allowNegativeNumbers]="false"
+                    [formControl]="transporteForm.controls.valorManual"
+                    placeholder="R$ 0,00" />
+            <span class="field-hint small">Se preencher, <b>substitui</b> o valor calculado.</span>
+        </label>
+    </div>
+
+    <!-- Resumo/seleção -->
+    <div class="resumo" *ngIf="form.value.incluirTransporte">
+        <div class="small">Transporte</div>
+        <ng-container *ngIf="valorManual && valorManual > 0; else calcado">
+            <div class="pill">Valor (manual): {{ valorManual | currency:'BRL':'symbol':'1.2-2' }}</div>
+        </ng-container>
+        <ng-template #calcado>
+            <div class="pill" *ngIf="frete; else aguardando">
+                Valor (calculado): {{ frete?.valor | currency:'BRL':'symbol':'1.2-2' }}
+            </div>
+            <ng-template #aguardando><div class="pill muted">Aguardando cálculo…</div></ng-template>
+        </ng-template>
+    </div>
+</div>
+
+<!-- CARD: Nome completo (separado) -->
+<div class="card grid" style="gap:12px;">
+    <h3 class="title">Nome completo</h3>
+    <label class="col">
+        <input
+                type="text"
+                class="input"
+                placeholder="Digite seu nome"
+                [formControl]="form.controls.nomeCompleto" />
+        <span class="field-hint" *ngIf="form.controls.nomeCompleto.invalid && form.controls.nomeCompleto.touched">
+      Informe seu nome completo.
+    </span>
+    </label>
+</div>
+
+<!-- MODAL -->
+<div class="modal" *ngIf="modalOpen" (click)="closeModal()">
+    <div class="modal-inner" (click)="$event.stopPropagation()">
+        <div class="modal-head">
+            <h4>Calculadora de frete</h4>
+            <button class="btn btn-ghost" (click)="closeModal()">×</button>
+        </div>
+
+        <div class="grid two">
+            <!-- ORIGEM -->
+            <div class="card">
+                <div class="small muted">Endereço de origem</div>
+                <div class="grid three">
+                    <label>
+                        <span class="small">CEP</span>
+                        <input
+                                class="input"
+                                inputmode="numeric"
+                                placeholder="00000000"
+                                [formControl]="transporteForm.controls.origemCep" />
+                        <div class="hint-row">
+                            <span class="small muted" *ngIf="buscandoOrigem">Buscando CEP…</span>
+                            <span class="small error" *ngIf="cepOrigemErro">{{ cepOrigemErro }}</span>
+                        </div>
+                    </label>
+                    <label>
+                        <span class="small">UF</span>
+                        <input
+                                class="input readonly"
+                                placeholder="—"
+                                [formControl]="transporteForm.controls.origemUf" />
+                    </label>
+                    <label>
+                        <span class="small">Cidade</span>
+                        <input
+                                class="input readonly"
+                                placeholder="—"
+                                [formControl]="transporteForm.controls.origemCidade" />
+                    </label>
+                </div>
+            </div>
+
+            <!-- DESTINO -->
+            <div class="card">
+                <div class="small muted">Endereço de destino</div>
+                <div class="grid three">
+                    <label>
+                        <span class="small">CEP</span>
+                        <input
+                                class="input"
+                                inputmode="numeric"
+                                placeholder="00000000"
+                                [formControl]="transporteForm.controls.destinoCep" />
+                        <div class="hint-row">
+                            <span class="small muted" *ngIf="buscandoDestino">Buscando CEP…</span>
+                            <span class="small error" *ngIf="cepDestinoErro">{{ cepDestinoErro }}</span>
+                        </div>
+                    </label>
+                    <label>
+                        <span class="small">UF</span>
+                        <input
+                                class="input readonly"
+                                placeholder="—"
+                                [formControl]="transporteForm.controls.destinoUf" />
+                    </label>
+                    <label>
+                        <span class="small">Cidade</span>
+                        <input
+                                class="input readonly"
+                                placeholder="—"
+                                [formControl]="transporteForm.controls.destinoCidade" />
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESO + DIMENSÕES -->
+        <div class="grid three" style="margin-top:12px;">
+            <!-- Peso -->
+            <label>
+                <span class="small">Peso (kg)</span>
+                <input
+                        class="input"
+                        type="number"
+                        min="0.3"
+                        [max]="MAX_PESO"
+                        step="0.1"
+                        placeholder="Ex.: 1.5"
+                        [formControl]="transporteForm.controls.pesoKg"
+                        (input)="onPesoInput()" />
+                <div class="hint-row">
+          <span class="small error" *ngIf="pesoAcimaLimite">
+            O limite para cálculo automático é {{ MAX_PESO }} kg. Informe manualmente o valor do transporte fora desta janela.
+          </span>
+                    <span class="small muted" *ngIf="!pesoAcimaLimite">
+            * Correios normalmente aceitam ~0,3 a 30 kg.
+          </span>
+                </div>
+            </label>
+
+            <!-- Altura -->
+            <label>
+        <span class="small">
+          Altura (cm)
+          <button type="button" class="btn-ghost icon-help" (click)="toggleHint('altura')" aria-label="Ajuda altura">?</button>
+        </span>
+                <input
+                        class="input"
+                        type="number"
+                        min="1"
+                        max="150"
+                        step="1"
+                        [placeholder]="DEFAULT_PKG.height.toString()"
+                        [formControl]="transporteForm.controls.alturaCm" />
+                <div class="hint-row">
+                    <span class="small error" *ngIf="transporteForm.controls.alturaCm.errors?.['max']">Máximo 150 cm.</span>
+                    <span class="small error" *ngIf="transporteForm.controls.alturaCm.errors?.['min']">Mínimo 1 cm.</span>
+                    <span class="small muted" *ngIf="!transporteForm.controls.alturaCm.errors">Padrão: {{ DEFAULT_PKG.height }} cm</span>
+                </div>
+                <div class="note" *ngIf="hint.altura">
+                    Limite: 150 cm. A soma (Comprimento + Largura + Altura) não pode exceder 200 cm.
+                </div>
+            </label>
+
+            <!-- Largura -->
+            <label>
+        <span class="small">
+          Largura (cm)
+          <button type="button" class="btn-ghost icon-help" (click)="toggleHint('largura')" aria-label="Ajuda largura">?</button>
+        </span>
+                <input
+                        class="input"
+                        type="number"
+                        min="1"
+                        max="150"
+                        step="1"
+                        [placeholder]="DEFAULT_PKG.width.toString()"
+                        [formControl]="transporteForm.controls.larguraCm" />
+                <div class="hint-row">
+                    <span class="small error" *ngIf="transporteForm.controls.larguraCm.errors?.['max']">Máximo 150 cm.</span>
+                    <span class="small error" *ngIf="transporteForm.controls.larguraCm.errors?.['min']">Mínimo 1 cm.</span>
+                    <span class="small muted" *ngIf="!transporteForm.controls.larguraCm.errors">Padrão: {{ DEFAULT_PKG.width }} cm</span>
+                </div>
+                <div class="note" *ngIf="hint.largura">
+                    Limite: 150 cm. A soma (Comprimento + Largura + Altura) não pode exceder 200 cm.
+                </div>
+            </label>
+        </div>
+
+        <!-- Comprimento em linha separada + soma -->
+        <div class="grid one">
+            <label>
+        <span class="small">
+          Comprimento (cm)
+          <button type="button" class="btn-ghost icon-help" (click)="toggleHint('comprimento')" aria-label="Ajuda comprimento">?</button>
+        </span>
+                <input
+                        class="input"
+                        type="number"
+                        min="1"
+                        max="150"
+                        step="1"
+                        [placeholder]="DEFAULT_PKG.length.toString()"
+                        [formControl]="transporteForm.controls.comprimentoCm" />
+                <div class="hint-row">
+                    <span class="small error" *ngIf="transporteForm.controls.comprimentoCm.errors?.['max']">Máximo 150 cm.</span>
+                    <span class="small error" *ngIf="transporteForm.controls.comprimentoCm.errors?.['min']">Mínimo 1 cm.</span>
+                    <span class="small muted" *ngIf="!transporteForm.controls.comprimentoCm.errors">Padrão: {{ DEFAULT_PKG.length }} cm</span>
+                </div>
+                <div class="note" *ngIf="hint.comprimento">
+                    Limite: 150 cm. A soma (Comprimento + Largura + Altura) não pode exceder 200 cm.
+                </div>
+            </label>
+
+            <!-- Erro de soma -->
+            <div class="hint-row" *ngIf="dimsSumExceeded">
+                <span class="small error">A soma (C + L + A) não pode exceder 200 cm.</span>
+            </div>
+        </div>
+
+        <div class="actions">
+            <!-- Mensagens à esquerda -->
+            <span class="small error" *ngIf="pesoAcimaLimite" style="margin-right:auto;">
+        Peso informado ({{ transporteForm.value.pesoKg || 0 }} kg) excede {{ MAX_PESO }} kg.
+      </span>
+            <span class="small error" *ngIf="apiError && !pesoAcimaLimite" style="margin-right:auto;">
+        {{ apiError }}
+      </span>
+
+            <!-- Botões -->
+            <button class="btn btn-ghost" type="button" (click)="limparFreteForm()">Limpar</button>
+            <button class="btn btn-ghost" type="button" (click)="closeModal()">Cancelar</button>
+            <button
+                    class="btn"
+                    type="button"
+                    [disabled]="loading || transporteForm.invalid || pesoAcimaLimite || dimsSumExceeded"
+                    (click)="calcularFrete()">
+                {{ loading ? 'Calculando…' : 'Calcular frete' }}
+            </button>
+            <button
+                    class="btn btn-primary"
+                    type="button"
+                    [disabled]="!frete || pesoAcimaLimite || dimsSumExceeded"
+                    (click)="aplicarFrete()">
+                Aplicar ao orçamento
+            </button>
+        </div>
+
+        <!-- RESULTADO -->
+        <div class="quote" *ngIf="frete">
+            <div class="small">Resultado</div>
+            <div class="pill">Valor: {{ frete.valor | currency:'BRL':'symbol':'1.2-2' }}</div>
+            <div class="pill" *ngIf="frete?.prazoDias != null">Prazo: {{ frete?.prazoDias }} dia(s)</div>
+
+            <div class="small muted" *ngIf="frete.servicos?.length" style="width:100%; margin-top:8px;">Detalhe por serviço:</div>
+            <table class="servicos" *ngIf="frete.servicos?.length">
+                <thead>
+                <tr><th>Serviço</th><th>Prazo</th><th>Valor</th></tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let s of frete.servicos">
+                    <td>{{ s.nome || s.codigo }}</td>
+                    <td>{{ s.prazoDias ?? '-' }} d</td>
+                    <td>{{ s.valor | currency:'BRL':'symbol':'1.2-2' }}</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <p class="note">
+                Valores <b>estimados</b> por {{ freteFonte || 'parceiro de frete' }} a partir dos dados informados
+                (CEPs, peso e dimensões). São cotações indicativas e podem variar no ato da contratação/postagem.
+                Se preferir, <b>informe um valor manual</b> no campo de transporte fora desta janela — esse valor
+                terá prioridade sobre a cotação.
+            </p>
+        </div>
+    </div>
+</div>

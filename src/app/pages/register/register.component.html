@@ -1,0 +1,35 @@
+<div class="grid form-shell">
+    <div class="card grid" style="gap:16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+            <h2 style="margin:0;">Registre-se</h2>
+            <div class="step-indicator">Crie sua conta para salvar seus orçamentos</div>
+        </div>
+
+        <form class="form-shell" (ngSubmit)="onSubmit()">
+            <div>
+                <label for="nomeUsuario">Nome de Usuário</label>
+                <input class="input" id="nomeUsuario" name="nomeUsuario" [(ngModel)]="nomeUsuario" placeholder="Seu nome" autocomplete="name" required />
+            </div>
+
+            <div>
+                <label for="emailUsuario">E-mail do Usuário</label>
+                <input class="input" type="email" id="emailUsuario" name="emailUsuario" [(ngModel)]="emailUsuario" placeholder="voce@exemplo.com" autocomplete="email" required />
+            </div>
+
+            <div *ngIf="error" class="small" style="color:#ef4444;">{{ error }}</div>
+
+            <!-- Lado a lado -->
+            <div class="actions">
+                <button class="btn btn-primary" type="submit" [disabled]="!canSubmit() || sending">
+                    {{ sending ? 'Enviando...' : 'Registrar-se' }}
+                </button>
+            </div>
+        </form>
+
+        <!-- Voltar alinhado logo abaixo -->
+        <div class="secondary-actions">
+            <a routerLink="/novo" class="btn btn-ghost">Continuar sem login</a>
+            <a routerLink="/login" class="btn btn-ghost">Já tenho conta</a>
+        </div>
+    </div>
+</div>
